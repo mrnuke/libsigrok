@@ -66,7 +66,7 @@ SR_PRIV int scpi_cmd_resp(const struct sr_dev_inst *sdi, GVariant **gvar,
 	struct sr_scpi_dev_inst *scpi;
 	va_list args;
 	double d;
-	int ret;
+	int ret, resp;
 	char *s;
 	const char *cmd;
 
@@ -111,6 +111,8 @@ SR_PRIV int scpi_cmd_resp(const struct sr_dev_inst *sdi, GVariant **gvar,
 				*gvar = g_variant_new_boolean(TRUE);
 			else if (!strcasecmp(s, "OFF") || !strcasecmp(s, "0") || !strcasecmp(s, "NO"))
 				*gvar = g_variant_new_boolean(FALSE);
+			else if (sr_atoi(s, &resp) == SR_OK)
+				*gvar = g_variant_new_boolean(!!resp);
 			else
 				ret = SR_ERR;
 			g_free(s);
