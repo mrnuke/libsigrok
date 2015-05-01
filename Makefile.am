@@ -354,6 +354,12 @@ libsigrok_la_SOURCES += \
 	src/hardware/sysclk-lwla/protocol.c \
 	src/hardware/sysclk-lwla/api.c
 endif
+if HW_TEKTRONIX_4000
+libsigrok_la_SOURCES += \
+	src/hardware/tektronix-4000/protocol.h \
+	src/hardware/tektronix-4000/protocol.c \
+	src/hardware/tektronix-4000/api.c
+endif
 if HW_TELEINFO
 libsigrok_la_SOURCES += \
 	src/hardware/teleinfo/protocol.h \

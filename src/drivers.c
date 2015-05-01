@@ -136,6 +136,9 @@ extern SR_PRIV struct sr_dev_driver *serial_dmm_drivers[];
 #ifdef HAVE_HW_SYSCLK_LWLA
 extern SR_PRIV struct sr_dev_driver sysclk_lwla_driver_info;
 #endif
+#ifdef HAVE_HW_TEKTRONIX_4000
+extern SR_PRIV struct sr_dev_driver tektronix_4000_driver_info;
+#endif
 #ifdef HAVE_HW_TELEINFO
 extern SR_PRIV struct sr_dev_driver teleinfo_driver_info;
 #endif
@@ -290,6 +293,9 @@ SR_PRIV struct sr_dev_driver **drivers_lists[] = {
 #endif
 #ifdef HAVE_HW_SYSCLK_LWLA
 	(DRVS) {&sysclk_lwla_driver_info, NULL},
+#endif
+#ifdef HAVE_HW_TEKTRONIX_4000
+	(DRVS) {&tektronix_4000_driver_info, NULL},
 #endif
 #ifdef HAVE_HW_TELEINFO
 	(DRVS) {&teleinfo_driver_info, NULL},
