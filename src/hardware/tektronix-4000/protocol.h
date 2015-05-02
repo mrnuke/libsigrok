@@ -1,7 +1,8 @@
 /*
  * This file is part of the libsigrok project.
  *
- * Copyright (C) 2015 Alexandru Gagniuc <mr.nuke.me@gmail.com>
+ * Copyright (C) 2015 Google, Inc.
+ * (Written by Alexandru Gagniuc <mrnuke@google.com> for Google, Inc.)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,13 +28,29 @@
 
 #define LOG_PREFIX "tektronix-4000"
 
+enum acq_state {
+	ACQ_IDLE,
+	ACQ_WAIT_HEADER,
+	ACQ_RECEIVING_DATA,
+};
+
 /** Private, per-device-instance driver context. */
 struct dev_context {
 	/* Model-specific information */
 
 	/* Acquisition settings */
+	size_t samples_per_frame;
+	uint64_t num_frames;
 
 	/* Operational state */
+	size_t num_bytes_received;
+	float *analog_buf;
+	uint8_t *tekbuf_rx;
+	size_t tekbuf_size_elems;
+	size_t tekbuf_num_in_rx;
+	size_t num_expected_bytes;
+	uint64_t num_frames_received;
+	enum acq_state acq_state;
 
 	/* Temporary state across callbacks */
 
