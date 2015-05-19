@@ -61,6 +61,7 @@ static const uint32_t agilent_n5700a_devopts_cg[] = {
 	SR_CONF_OUTPUT_VOLTAGE_TARGET | SR_CONF_GET | SR_CONF_SET | SR_CONF_LIST,
 	SR_CONF_OUTPUT_CURRENT | SR_CONF_GET,
 	SR_CONF_OUTPUT_ENABLED | SR_CONF_GET | SR_CONF_SET,
+	SR_CONF_SCPI_CUSTOM | SR_CONF_GET | SR_CONF_SET,
 };
 
 static const struct channel_spec agilent_n5767a_ch[] = {
@@ -161,6 +162,7 @@ static const uint32_t rigol_dp800_devopts_cg[] = {
 	SR_CONF_OUTPUT_CURRENT | SR_CONF_GET,
 	SR_CONF_OUTPUT_CURRENT_LIMIT | SR_CONF_GET | SR_CONF_SET | SR_CONF_LIST,
 	SR_CONF_OUTPUT_ENABLED | SR_CONF_GET | SR_CONF_SET,
+	SR_CONF_SCPI_CUSTOM | SR_CONF_GET | SR_CONF_SET,
 };
 
 static const struct channel_spec rigol_dp821a_ch[] = {
@@ -234,6 +236,7 @@ static const uint32_t hp_6632b_devopts[] = {
 	SR_CONF_OUTPUT_CURRENT | SR_CONF_GET,
 	SR_CONF_OUTPUT_VOLTAGE_TARGET | SR_CONF_GET | SR_CONF_SET | SR_CONF_LIST,
 	SR_CONF_OUTPUT_CURRENT_LIMIT | SR_CONF_GET | SR_CONF_SET | SR_CONF_LIST,
+	SR_CONF_SCPI_CUSTOM | SR_CONF_GET | SR_CONF_SET,
 };
 
 static const struct channel_spec hp_6632b_ch[] = {
@@ -272,6 +275,7 @@ static const uint32_t philips_pm2800_devopts_cg[] = {
 	SR_CONF_OVER_CURRENT_PROTECTION_ENABLED | SR_CONF_GET | SR_CONF_SET,
 	SR_CONF_OVER_CURRENT_PROTECTION_ACTIVE | SR_CONF_GET,
 	SR_CONF_OUTPUT_REGULATION | SR_CONF_GET,
+	SR_CONF_SCPI_CUSTOM | SR_CONF_GET | SR_CONF_SET,
 };
 
 enum philips_pm2800_modules {

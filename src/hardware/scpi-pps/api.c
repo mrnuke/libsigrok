@@ -258,6 +258,7 @@ static int config_get(uint32_t key, GVariant **data, const struct sr_dev_inst *s
 	const GVariantType *gvtype;
 	unsigned int i;
 	int cmd, ret;
+	char *s;
 
 	if (!sdi)
 		return SR_ERR_ARG;
@@ -346,6 +347,11 @@ static int config_get(uint32_t key, GVariant **data, const struct sr_dev_inst *s
 	case SR_CONF_OUTPUT_REGULATION:
 		gvtype = G_VARIANT_TYPE_STRING;
 		cmd = SCPI_CMD_GET_OUTPUT_REGULATION;
+		break;
+	case SR_CONF_SCPI_CUSTOM:
+		sr_scpi_get_string(sdi->conn, NULL, &s);
+		*data = g_variant_new_string(s);
+		return SR_OK;
 	}
 	if (gvtype) {
 		if (cg)
@@ -362,6 +368,7 @@ static int config_set(uint32_t key, GVariant *data, const struct sr_dev_inst *sd
 {
 	double d;
 	int ret;
+	gsize len;
 
 	if (!sdi)
 		return SR_ERR_ARG;
@@ -418,6 +425,9 @@ static int config_set(uint32_t key, GVariant *data, const struct sr_dev_inst *sd
 			ret = scpi_cmd(sdi, SCPI_CMD_SET_OVER_TEMPERATURE_PROTECTION_ENABLE);
 		else
 			ret = scpi_cmd(sdi, SCPI_CMD_SET_OVER_TEMPERATURE_PROTECTION_DISABLE);
+		break;
+	case SR_CONF_SCPI_CUSTOM:
+		ret = sr_scpi_send(sdi->conn, g_variant_get_string(data, &len));
 		break;
 	default:
 		ret = SR_ERR_NA;

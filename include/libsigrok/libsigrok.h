@@ -883,6 +883,9 @@ enum sr_configkey {
 	/* Output frequency target in Hz. */
 	SR_CONF_OUTPUT_FREQUENCY_TARGET,
 
+	/* Send a custom command to a SCPI device. */
+	SR_CONF_SCPI_CUSTOM,
+
 	/*--- Special stuff -------------------------------------------------*/
 
 	/** Scan options supported by the driver. */

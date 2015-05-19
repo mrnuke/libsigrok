@@ -167,6 +167,8 @@ static struct sr_config_info sr_config_info_data[] = {
 		"Measured secondary quantity", NULL},
 	{SR_CONF_EQUIV_CIRCUIT_MODEL, SR_T_STRING, "equiv_circuit_model",
 		"Equivalent circuit model", NULL},
+	{SR_CONF_SCPI_CUSTOM, SR_T_STRING, "scpi_custom",
+		"Custom SCPI command", NULL},
 
 	/* Special stuff */
 	{SR_CONF_SCAN_OPTIONS, SR_T_STRING, "scan_options",
