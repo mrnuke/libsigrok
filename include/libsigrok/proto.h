@@ -76,6 +76,8 @@ SR_API GSList *sr_dev_inst_channel_groups_get(const struct sr_dev_inst *sdi);
 SR_API struct sr_dev_inst *sr_dev_inst_user_new(const char *vendor,
 		const char *model, const char *version);
 SR_API int sr_dev_inst_channel_add(struct sr_dev_inst *sdi, int index, int type, const char *name);
+SR_API int sr_dev_custom_command(const struct sr_dev_inst *sdi,
+				 const GString *command, GString *response);
 
 /*--- hwdriver.c ------------------------------------------------------------*/
 

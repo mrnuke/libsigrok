@@ -611,4 +611,26 @@ SR_API GSList *sr_dev_inst_channel_groups_get(const struct sr_dev_inst *sdi)
 	return sdi->channel_groups;
 }
 
+/**
+ * Sends a custom command to a device
+ *
+ * @param sdi Device instance to use. Must not be NULL.
+ * @param command GString containing the command to send.
+ * @param response GString which will contain the response,
+ *                 or NULL if no response is expected.
+ *
+ * @return SR_OK upon success, a negative error code upon errors.
+ */
+SR_API int sr_dev_custom_command(const struct sr_dev_inst *sdi,
+				 const GString *command, GString *response)
+{
+	if (!sdi || !command)
+		return SR_ERR_ARG;
+
+	if (!sdi->driver || !sdi->driver->dev_custom_command)
+		return SR_ERR_NA;
+
+	return sdi->driver->dev_custom_command(sdi, command, response);
+}
+
 /** @} */

@@ -1071,6 +1071,9 @@ struct sr_dev_driver {
 	/** End data acquisition on the specified device. */
 	int (*dev_acquisition_stop) (struct sr_dev_inst *sdi,
 			void *cb_data);
+	/** Send a custom command to the device, if supported .*/
+	int (*dev_custom_command) (const struct sr_dev_inst *sdi,
+				   const GString *command, GString *response);
 
 	/* Dynamic */
 	/** Device driver private data. Initialized by init(). */
