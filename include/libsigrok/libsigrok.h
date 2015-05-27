@@ -77,6 +77,7 @@ enum sr_error_code {
 	SR_ERR_CHANNEL_GROUP = -9, /**< A channel group must be specified. */
 	SR_ERR_DATA          =-10, /**< Data is invalid.  */
 	SR_ERR_IO            =-11, /**< Input/output error. */
+	SR_ERR_NOT_SUPPORTED =-12, /**< Request is not supported by device */
 
 	/*
 	 * Note: When adding entries here, don't forget to also update the
@@ -1071,6 +1072,9 @@ struct sr_dev_driver {
 	/** End data acquisition on the specified device. */
 	int (*dev_acquisition_stop) (struct sr_dev_inst *sdi,
 			void *cb_data);
+	/** Send a custom command to the devicem, if supported .*/
+	int (*dev_custom_command) (const struct sr_dev_inst *sdi,
+				   const GString *command, GString *response);
 
 	/* Dynamic */
 	/** Device driver private data. Initialized by init(). */
