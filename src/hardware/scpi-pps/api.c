@@ -604,6 +604,32 @@ static int dev_acquisition_stop(struct sr_dev_inst *sdi, void *cb_data)
 	return SR_OK;
 }
 
+static int dev_custom_command(const struct sr_dev_inst *sdi,
+				 const char *command, char *response_buf,
+				 size_t buflen)
+{
+	enum sr_error_code ret;
+	char *resp;
+	struct sr_scpi_dev_inst *scpi;
+
+	if (!(scpi = sdi->conn))
+		return SR_ERR;
+
+	if (!response_buf || !buflen)
+		return sr_scpi_send(scpi, command);
+
+
+	ret = sr_scpi_get_string(scpi, command, &resp);
+
+	strncpy(response_buf, resp, buflen);
+	response_buf[buflen - 1] = '\0';
+	/*
+	 * TODO(mrnuke): Who is supposed to free the string in 'resp'?
+	 * Is this automagically gc'd, or do we need to explicitly g_free it?
+	 */
+	return ret;
+}
+
 SR_PRIV struct sr_dev_driver scpi_pps_driver_info = {
 	.name = "scpi-pps",
 	.longname = "SCPI PPS",
@@ -620,5 +646,6 @@ SR_PRIV struct sr_dev_driver scpi_pps_driver_info = {
 	.dev_close = dev_close,
 	.dev_acquisition_start = dev_acquisition_start,
 	.dev_acquisition_stop = dev_acquisition_stop,
+	.dev_custom_command = dev_custom_command,
 	.priv = NULL,
 };
