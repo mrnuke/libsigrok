@@ -76,6 +76,19 @@ SR_API GSList *sr_dev_inst_channel_groups_get(const struct sr_dev_inst *sdi);
 SR_API struct sr_dev_inst *sr_dev_inst_user_new(const char *vendor,
 		const char *model, const char *version);
 SR_API int sr_dev_inst_channel_add(struct sr_dev_inst *sdi, int index, int type, const char *name);
+/*
+ * TODO(mrnuke): Is this API acceptable?
+ *   - Should we require a const char* for command, or a gvariant? cont char *
+ *     is simpler, but is it the best choice?
+ *   - Should we send back a plain string, or should we take in a hint as to
+ *     what type of value we expect back and do some processing? This sounds
+ *     like a nice feature, but is beyond the scope of a custom command.
+ *   - Should we require the caller provides the storage, or should we g_malloc
+ *     and require the caller clean up?
+ */
+SR_API int sr_dev_custom_command(const struct sr_dev_inst *sdi,
+				 const char *command, char *response_buf,
+				 size_t buflen);
 
 /*--- hwdriver.c ------------------------------------------------------------*/
 
