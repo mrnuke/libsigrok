@@ -604,6 +604,26 @@ static int dev_acquisition_stop(struct sr_dev_inst *sdi, void *cb_data)
 	return SR_OK;
 }
 
+static int dev_custom_command(const struct sr_dev_inst *sdi,
+			      const GString *command, GString *response)
+{
+	enum sr_error_code ret;
+	char *resp;
+	struct sr_scpi_dev_inst *scpi;
+
+	if (!(scpi = sdi->conn))
+		return SR_ERR;
+
+	if (!response)
+		return sr_scpi_send(scpi, command->str);
+
+	ret = sr_scpi_get_string(scpi, command->str, &resp);
+	g_string_assign(response, resp);
+	g_free(resp);
+
+	return ret;
+}
+
 SR_PRIV struct sr_dev_driver scpi_pps_driver_info = {
 	.name = "scpi-pps",
 	.longname = "SCPI PPS",
@@ -620,5 +640,6 @@ SR_PRIV struct sr_dev_driver scpi_pps_driver_info = {
 	.dev_close = dev_close,
 	.dev_acquisition_start = dev_acquisition_start,
 	.dev_acquisition_stop = dev_acquisition_stop,
+	.dev_custom_command = dev_custom_command,
 	.priv = NULL,
 };
