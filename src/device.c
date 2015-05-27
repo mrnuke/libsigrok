@@ -611,4 +611,33 @@ SR_API GSList *sr_dev_inst_channel_groups_get(const struct sr_dev_inst *sdi)
 	return sdi->channel_groups;
 }
 
+/**
+ * Sends a custom command to a device
+ *
+ * @param sdi Device instance to use. Must not be NULL.
+ * @param command Null-terminated string containing the command to send.
+ * @param response_buf Buffer to hold the response from the device.
+ * @param buflen Size of the storage in response_buf, in bytes.
+ *
+ * @return SR_OK upon success, a negative error code upon errors.
+ */
+SR_API int sr_dev_custom_command(const struct sr_dev_inst *sdi,
+				 const char *command, char *response_buf,
+				 size_t buflen)
+{
+	/*
+	 * TODO(mrnuke): Shouldn't we send a different error code when
+	 * dev custom command in not implemented?
+	 * Maybe SR_ERR_UNSUPPORTED?
+	 */
+	if (!sdi || !sdi->driver || !sdi->driver->dev_custom_command)
+		return SR_ERR;
+
+	if (!command)
+		return SR_ERR_ARG;
+
+	return sdi->driver->dev_custom_command(sdi, command, response_buf,
+					       buflen);
+}
+
 /** @} */
