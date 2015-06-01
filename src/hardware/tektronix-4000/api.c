@@ -20,6 +20,8 @@
 
 #include "protocol.h"
 
+#include <string.h>
+
 SR_PRIV struct sr_dev_driver tektronix_4000_driver_info;
 
 static const uint32_t scanopts[] = {
@@ -39,17 +41,20 @@ static const uint32_t devopts[] = {
 
 static struct sr_dev_inst *probe_device(struct sr_scpi_dev_inst *scpi)
 {
-	struct dev_context *devc;
-	struct sr_dev_inst *sdi;
-	struct sr_scpi_hw_info *hw_info;
+	struct dev_context *devc = NULL;
+	struct sr_dev_inst *sdi = NULL;
+	struct sr_scpi_hw_info *hw_info = NULL;
 
 	if (sr_scpi_get_hw_id(scpi, &hw_info) != SR_OK) {
 		sr_info("Couldn't get IDN response.");
-		return NULL;
+		goto not_found;
 	}
 
 	//sr_dbg(" %s, %s, %s, %s", hw_info->manufacturer, hw_info->model,
 	//	hw_info->serial_number, hw_info->firmware_version);
+	if (strcmp(hw_info->manufacturer, "Tektronix"))
+		goto not_found;
+
 	sdi = g_malloc0(sizeof(struct sr_dev_inst));
 	sdi->status = SR_ST_INACTIVE;
 	sdi->vendor = g_strdup(hw_info->manufacturer);
@@ -72,6 +77,14 @@ static struct sr_dev_inst *probe_device(struct sr_scpi_dev_inst *scpi)
 
 	sr_scpi_hw_info_free(hw_info);
 	return sdi;
+
+not_found:
+	sr_scpi_hw_info_free(hw_info);
+	if (sdi)
+		sr_dev_inst_free(sdi);
+	if (devc)
+		g_free(devc);
+	return NULL;
 }
 
 static int init(struct sr_dev_driver *di, struct sr_context *sr_ctx)
@@ -261,6 +274,9 @@ static int dev_acquisition_start(const struct sr_dev_inst *sdi, void *cb_data)
 	devc->num_bytes_received = 0;
 	devc->num_frames_received = 0;
 	devc->tekbuf_num_in_rx = 0;
+
+	/* 16-bit samples; binary encoding; as positive integers; MSB order */
+	sr_scpi_send(scpi, ":WFMO:BYT_NR 2;ENCDG BIN;BN_FMT RP;BYT_OR MSB");
 
 	/* Prime the pipe with the first channel's fetch. */
 	/*ch = next_enabled_channel(sdi, NULL);

@@ -99,7 +99,7 @@ static size_t tek_send_ana(const struct sr_dev_inst *sdi, uint8_t *dat, size_t l
 		sam = (dbuf[0] << 8) | dbuf[1];
 		fart[i] = ((float)sam - yoff) * ymul;
 	}
-//    tcp-raw/192.168.1.21/4000
+//    tcp-raw/192.168.2.21/4000
 	analog.channels = g_slist_append(NULL, sdi->channels->data);
 	analog.num_samples = wench;
 	analog.data = fart;
@@ -121,7 +121,7 @@ static void request_frame(const struct sr_dev_inst *sdi)
 	struct dev_context *devc = sdi->priv;
 	struct sr_scpi_dev_inst *scpi = sdi->conn;
 
-	sr_scpi_send(scpi, "CURV?");
+	sr_scpi_send(scpi, ":CURV?");
 	devc->tekbuf_num_in_rx = devc->num_bytes_received = 0;
 }
 
@@ -179,7 +179,7 @@ SR_PRIV int tektronix_4000_receive_data(int fd, int revents, void *cb_data)
 	yay = sr_scpi_read_data(scpi, (char *)tekbuf_tail(devc),
 				tekbuf_num_unused(devc));
 	if (yay < 0)
-		sr_err("MESSED UP");
+		sr_err("MESSED UP %s (%i)", sr_strerror(yay), yay);
 
 	if(yay) {
 		//sr_spew("did %d", yay);
