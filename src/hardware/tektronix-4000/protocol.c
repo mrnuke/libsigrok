@@ -161,6 +161,7 @@ SR_PRIV int tektronix_4000_receive_data(int fd, int revents, void *cb_data)
 		if (!devc->num_expected_bytes)
 			break;
 
+		devc->habemus_packetum = devc->tekbuf_num_in_rx;
 		sr_spew("Expecting a %zu bytes frame",
 			devc->num_expected_bytes);
 		devc->acq_state = ACQ_RECEIVING_DATA;
@@ -184,8 +185,9 @@ SR_PRIV int tektronix_4000_receive_data(int fd, int revents, void *cb_data)
 	if(yay) {
 		//sr_spew("did %d", yay);
 		devc->tekbuf_num_in_rx += yay;
+		devc->habemus_packetum += yay;
 	} else {
-		//sr_spew("nay");
+		sr_spew("nay");
 	}
 
 
@@ -206,10 +208,13 @@ SR_PRIV int tektronix_4000_receive_data(int fd, int revents, void *cb_data)
 		devc->num_frames_received++;
 		devc->num_bytes_received = 0;
 		devc->acq_state = ACQ_IDLE;
+		sr_dbg("This like has had %zu baitz\n", devc->habemus_packetum);
 	}
 
-	if (devc->num_frames_received >= devc->num_frames)
+	if (devc->num_frames_received >= devc->num_frames) {
 		sdi->driver->dev_acquisition_stop(sdi, cb_data);
+		sr_dbg("EL ACQ es stopados %zu baitz\n", devc->habemus_packetum);
+	}
 
 	return TRUE;
 }

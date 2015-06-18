@@ -21,6 +21,7 @@
 #include "protocol.h"
 
 #include <string.h>
+#include <strings.h>
 
 SR_PRIV struct sr_dev_driver tektronix_4000_driver_info;
 
@@ -41,19 +42,38 @@ static const uint32_t devopts[] = {
 
 static struct sr_dev_inst *probe_device(struct sr_scpi_dev_inst *scpi)
 {
+	gboolean is_mso;
+	int num_channels;
+	size_t i;
 	struct dev_context *devc = NULL;
 	struct sr_dev_inst *sdi = NULL;
 	struct sr_scpi_hw_info *hw_info = NULL;
+	const char pattern[] = "^(MSO|DPO)4[01][0-9][24]B";
 
 	if (sr_scpi_get_hw_id(scpi, &hw_info) != SR_OK) {
 		sr_info("Couldn't get IDN response.");
 		goto not_found;
 	}
 
-	//sr_dbg(" %s, %s, %s, %s", hw_info->manufacturer, hw_info->model,
-	//	hw_info->serial_number, hw_info->firmware_version);
-	if (strcmp(hw_info->manufacturer, "Tektronix"))
+	if (strcasecmp(hw_info->manufacturer, "Tektronix"))
 		goto not_found;
+
+	if (!g_regex_match_simple(pattern, hw_info->model, 0, 0))
+		goto not_found;
+
+	if (hw_info->model[0] == 'M')
+		is_mso = TRUE;
+	else if (hw_info->model[0] == 'D')
+		is_mso = FALSE;
+	else
+		goto not_found;
+
+	num_channels = hw_info->model[6] - '0';
+
+	sr_dbg(" %s, %s, %s, %s", hw_info->manufacturer, hw_info->model,
+		hw_info->serial_number, hw_info->firmware_version);
+
+	sr_dbg("%d channels%s.", num_channels, is_mso ? " 16 logic" : "");
 
 	sdi = g_malloc0(sizeof(struct sr_dev_inst));
 	sdi->status = SR_ST_INACTIVE;
@@ -65,9 +85,20 @@ static struct sr_dev_inst *probe_device(struct sr_scpi_dev_inst *scpi)
 	sdi->inst_type = SR_INST_SCPI;
 	sdi->serial_num = g_strdup(hw_info->serial_number);
 
+	struct sr_channel_group *ana = g_malloc0(sizeof(struct sr_channel_group));
+	ana->name = "futbar";
+
 	struct sr_channel *ch;
-	ch = sr_channel_new(sdi, 0, SR_CHANNEL_ANALOG, TRUE, "CHxx");
-	sdi->channels = g_slist_append(NULL, ch);
+	sdi->channels = NULL;
+	for (i = 0; i < num_channels; i++) {
+		char name[27];
+		sprintf(name, "CH0%zu", i);
+		ch = sr_channel_new(sdi, i, SR_CHANNEL_ANALOG, TRUE, name);
+		ana->channels = g_slist_append(ana->channels, ch);
+		//sdi->channels = g_slist_append(sdi->channels, ch);
+	}
+
+
 
 	devc = g_malloc0(sizeof(struct dev_context));
 	devc->tekbuf_rx = g_malloc(1075);

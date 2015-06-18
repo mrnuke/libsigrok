@@ -49,6 +49,7 @@ struct dev_context {
 	size_t tekbuf_size_elems;
 	size_t tekbuf_num_in_rx;
 	size_t num_expected_bytes;
+	size_t habemus_packetum;
 	uint64_t num_frames_received;
 	enum acq_state acq_state;
 
