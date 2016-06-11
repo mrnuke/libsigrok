@@ -18,25 +18,57 @@
  */
 
 #include <config.h>
+#include <scpi.h>
 #include "protocol.h"
 
-SR_PRIV struct sr_dev_driver hp_3325x_driver_info;
+static struct sr_dev_driver hp_3325x_driver_info;
+
+static const uint32_t scanopts[] = {
+	SR_CONF_CONN,
+	SR_CONF_SERIALCOMM,
+};
+
+static const uint32_t drvopts[] = {
+	SR_CONF_FUNCTION_GEN,
+};
+
+static const uint32_t devopts[] = {
+	SR_CONF_OUTPUT_FREQUENCY_TARGET | SR_CONF_SET | SR_CONF_GET,
+};
+
+static struct sr_dev_inst *probe_device(struct sr_scpi_dev_inst *scpi)
+{
+	int ret;
+	char *response;
+	struct sr_dev_inst *sdi;
+	struct dev_context *devc;
+
+	/* FIXME: Use better way to probe this. */
+	ret = sr_scpi_get_string(scpi, "IFU", &response);
+	if ((ret != SR_OK) || !response)
+		return NULL;
+
+	/* FIXME: Actually check the response. */
+
+	/* FIXME: differentiate between 3325A and 3325B. */
+	devc = g_malloc0(sizeof(struct dev_context));
+	sdi = g_malloc0(sizeof(struct sr_dev_inst));
+	sdi->vendor = g_strdup("Hewlett-Packard");
+	/* FIXME: differentiate between 3325A and 3325B. */
+	sdi->model = g_strdup("3325A");
+	////sdi->version = get_revision(scpi);
+	sdi->conn = scpi;
+	sdi->driver = &hp_3325x_driver_info;
+	sdi->inst_type = SR_INST_SCPI;
+	sdi->priv = devc;
+
+	return sdi;
+
+}
 
 static GSList *scan(struct sr_dev_driver *di, GSList *options)
 {
-	struct drv_context *drvc;
-	GSList *devices;
-
-	(void)options;
-
-	devices = NULL;
-	drvc = di->context;
-	drvc->instances = NULL;
-
-	/* TODO: scan for devices, either based on a SR_CONF_CONN option
-	 * or on a USB scan. */
-
-	return devices;
+	return sr_scpi_scan(di->context, options, probe_device);
 }
 
 static int dev_clear(const struct sr_dev_driver *di)
@@ -46,9 +78,10 @@ static int dev_clear(const struct sr_dev_driver *di)
 
 static int dev_open(struct sr_dev_inst *sdi)
 {
-	(void)sdi;
+	struct sr_scpi_dev_inst *scpi = sdi->conn;
 
-	/* TODO: get handle from sdi->conn and open it. */
+	if (sr_scpi_open(scpi) != SR_OK)
+		return SR_ERR;
 
 	sdi->status = SR_ST_ACTIVE;
 
@@ -57,9 +90,12 @@ static int dev_open(struct sr_dev_inst *sdi)
 
 static int dev_close(struct sr_dev_inst *sdi)
 {
-	(void)sdi;
+	struct sr_scpi_dev_inst *scpi = sdi->conn;
 
-	/* TODO: get handle from sdi->conn and close it. */
+	if (sdi->status != SR_ST_ACTIVE)
+		return SR_ERR_DEV_CLOSED;
+
+	sr_scpi_close(scpi);
 
 	sdi->status = SR_ST_INACTIVE;
 
@@ -70,14 +106,19 @@ static int config_get(uint32_t key, GVariant **data,
 	const struct sr_dev_inst *sdi, const struct sr_channel_group *cg)
 {
 	int ret;
+	double resp_data;
 
-	(void)sdi;
-	(void)data;
+	sr_spew("ZOPA: %s", __func__);
+
 	(void)cg;
 
 	ret = SR_OK;
 	switch (key) {
 	/* TODO */
+	case SR_CONF_OUTPUT_FREQUENCY_TARGET:
+		hp_3325x_query_freq(sdi->conn, &resp_data);
+		*data = g_variant_new_double(resp_data);
+		break;
 	default:
 		return SR_ERR_NA;
 	}
@@ -110,10 +151,22 @@ static int config_list(uint32_t key, GVariant **data,
 	const struct sr_dev_inst *sdi, const struct sr_channel_group *cg)
 {
 	int ret;
-
-	(void)sdi;
-	(void)data;
 	(void)cg;
+
+	if (key == SR_CONF_SCAN_OPTIONS) {
+		*data = g_variant_new_fixed_array(G_VARIANT_TYPE_UINT32,
+						  scanopts, ARRAY_SIZE(scanopts), sizeof(uint32_t));
+		return SR_OK;
+	} else if ((key == SR_CONF_DEVICE_OPTIONS) && !sdi) {
+		*data = g_variant_new_fixed_array(G_VARIANT_TYPE_UINT32,
+						  drvopts, ARRAY_SIZE(drvopts), sizeof(uint32_t));
+		return SR_OK;
+	} else if ((key == SR_CONF_DEVICE_OPTIONS) && !cg) {
+		sr_spew("ZOPAFUCKA");
+		*data = g_variant_new_fixed_array(G_VARIANT_TYPE_UINT32,
+						  devopts, ARRAY_SIZE(devopts), sizeof(uint32_t));
+		return SR_OK;
+	}
 
 	ret = SR_OK;
 	switch (key) {
@@ -127,13 +180,9 @@ static int config_list(uint32_t key, GVariant **data,
 
 static int dev_acquisition_start(const struct sr_dev_inst *sdi)
 {
-	if (sdi->status != SR_ST_ACTIVE)
-		return SR_ERR_DEV_CLOSED;
-
-	/* TODO: configure hardware, reset acquisition state, set up
-	 * callbacks and send header packet. */
-
-	return SR_OK;
+	(void)sdi;
+	/* We can only set output parameters, but not measure them. */
+	return SR_ERR_NA;
 }
 
 static int dev_acquisition_stop(struct sr_dev_inst *sdi)
@@ -146,7 +195,7 @@ static int dev_acquisition_stop(struct sr_dev_inst *sdi)
 	return SR_OK;
 }
 
-SR_PRIV struct sr_dev_driver hp_3325x_driver_info = {
+static struct sr_dev_driver hp_3325x_driver_info = {
 	.name = "hp-3325x",
 	.longname = "HP 3325x",
 	.api_version = 1,

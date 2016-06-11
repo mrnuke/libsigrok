@@ -18,24 +18,44 @@
  */
 
 #include <config.h>
+#include <scpi.h>
+#include <stdio.h>
 #include "protocol.h"
 
-SR_PRIV int hp_3325x_receive_data(int fd, int revents, void *cb_data)
+static double freq_unit_to_multiplier(const char *unit)
 {
-	const struct sr_dev_inst *sdi;
-	struct dev_context *devc;
+	if (!strcmp(unit, "HZ"))
+		return 1.0E0;
+	else if (!strcmp(unit, "KH"))
+		return 1.0E3;
+	else if (!strcmp(unit, "MH"))
+		return 1.0E6;
+	else
+		return 1.0;
+}
 
-	(void)fd;
+SR_PRIV int hp_3325x_query_freq(struct sr_scpi_dev_inst *scpi, double *freq)
+{
+	int ret;
+	char *response;
+	char func[4], unit[4];
+	double val;
 
-	if (!(sdi = cb_data))
-		return TRUE;
+	ret = sr_scpi_get_string(scpi, "IFR", &response);
+	if ((ret != SR_OK) || !response)
+		return SR_ERR_IO;
 
-	if (!(devc = sdi->priv))
-		return TRUE;
+	ret = sscanf(response, "%2s%lf%2s", func, &val, unit);
 
-	if (revents == G_IO_IN) {
-		/* TODO */
-	}
+	if (ret != 3)
+		return SR_ERR_IO;
 
-	return TRUE;
+	if (!strcmp(func, "FR"))
+		return SR_ERR_IO;
+
+	sr_spew("Got funx %s, unit %s, with value %lf", func, unit, val);
+
+	*freq = val;
+
+	return SR_OK;
 }

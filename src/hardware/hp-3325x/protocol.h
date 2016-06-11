@@ -30,6 +30,7 @@
 /** Private, per-device-instance driver context. */
 struct dev_context {
 	/* Model-specific information */
+	int dummy;
 
 	/* Acquisition settings */
 
@@ -39,6 +40,6 @@ struct dev_context {
 
 };
 
-SR_PRIV int hp_3325x_receive_data(int fd, int revents, void *cb_data);
+SR_PRIV int hp_3325x_query_freq(struct sr_scpi_dev_inst *scpi, double *freq);
 
 #endif
